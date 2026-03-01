@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		A1000001 /* LockKeyboardApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001 /* LockKeyboardApp.swift */; };
 		A1000002 /* KeyboardLockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002 /* KeyboardLockManager.swift */; };
+		A1000003 /* PianoKeyMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005 /* PianoKeyMapping.swift */; };
+		A1000004 /* PianoEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006 /* PianoEngine.swift */; };
+		A1000005 /* PianoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* PianoViewModel.swift */; };
+		A1000006 /* PianoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* PianoView.swift */; };
+		A1000007 /* PianoWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009 /* PianoWindowController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -16,6 +21,11 @@
 		A2000002 /* KeyboardLockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLockManager.swift; sourceTree = "<group>"; };
 		A2000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A2000004 /* LockKeyboard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LockKeyboard.entitlements; sourceTree = "<group>"; };
+		A2000005 /* PianoKeyMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyMapping.swift; sourceTree = "<group>"; };
+		A2000006 /* PianoEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoEngine.swift; sourceTree = "<group>"; };
+		A2000007 /* PianoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoViewModel.swift; sourceTree = "<group>"; };
+		A2000008 /* PianoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoView.swift; sourceTree = "<group>"; };
+		A2000009 /* PianoWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoWindowController.swift; sourceTree = "<group>"; };
 		A2000010 /* LockKeyboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LockKeyboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -43,6 +53,11 @@
 			children = (
 				A2000001 /* LockKeyboardApp.swift */,
 				A2000002 /* KeyboardLockManager.swift */,
+				A2000005 /* PianoKeyMapping.swift */,
+				A2000006 /* PianoEngine.swift */,
+				A2000007 /* PianoViewModel.swift */,
+				A2000008 /* PianoView.swift */,
+				A2000009 /* PianoWindowController.swift */,
 				A2000003 /* Info.plist */,
 				A2000004 /* LockKeyboard.entitlements */,
 			);
@@ -111,6 +126,11 @@
 			files = (
 				A1000001 /* LockKeyboardApp.swift in Sources */,
 				A1000002 /* KeyboardLockManager.swift in Sources */,
+				A1000003 /* PianoKeyMapping.swift in Sources */,
+				A1000004 /* PianoEngine.swift in Sources */,
+				A1000005 /* PianoViewModel.swift in Sources */,
+				A1000006 /* PianoView.swift in Sources */,
+				A1000007 /* PianoWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

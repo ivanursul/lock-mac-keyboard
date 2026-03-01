@@ -1,14 +1,26 @@
 import Cocoa
 import Combine
 
+enum AppMode {
+    case normal
+    case locked
+    case piano
+}
+
 final class KeyboardLockManager: ObservableObject {
-    @Published var isLocked = false
+    @Published var mode: AppMode = .normal
     @Published var hasAccessibilityPermission = false
+
+    var isLocked: Bool { mode == .locked }
+    var isPiano: Bool { mode == .piano }
 
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var healthCheckTimer: Timer?
     private var permissionPollTimer: Timer?
+
+    // Piano mode: the view model is set externally by the app
+    var pianoViewModel: PianoViewModel?
 
     init() {
         hasAccessibilityPermission = AXIsProcessTrusted()
@@ -18,7 +30,7 @@ final class KeyboardLockManager: ObservableObject {
     }
 
     deinit {
-        unlock()
+        stopAll()
         permissionPollTimer?.invalidate()
     }
 
@@ -33,14 +45,53 @@ final class KeyboardLockManager: ObservableObject {
     }
 
     func lock() {
-        guard !isLocked, hasAccessibilityPermission else { return }
+        guard mode == .normal, hasAccessibilityPermission else { return }
+        startEventTap()
+        mode = .locked
+    }
 
+    func unlock() {
+        tearDownEventTap()
+        pianoViewModel = nil
+        mode = .normal
+    }
+
+    // MARK: - Piano Mode
+
+    func startPianoMode(viewModel: PianoViewModel) {
+        guard mode == .normal, hasAccessibilityPermission else { return }
+        pianoViewModel = viewModel
+        startEventTap()
+        mode = .piano
+    }
+
+    func stopPianoMode() {
+        pianoViewModel?.stop()
+        tearDownEventTap()
+        pianoViewModel = nil
+        mode = .normal
+    }
+
+    /// Stops everything (for quit cleanup)
+    func stopAll() {
+        switch mode {
+        case .piano:
+            stopPianoMode()
+        case .locked:
+            unlock()
+        case .normal:
+            break
+        }
+    }
+
+    // MARK: - Event Tap
+
+    private func startEventTap() {
         let eventMask: CGEventMask =
             (1 << CGEventType.keyDown.rawValue) |
             (1 << CGEventType.keyUp.rawValue) |
             (1 << CGEventType.flagsChanged.rawValue)
 
-        // Store a raw pointer to self for the C callback
         let selfPtr = Unmanaged.passUnretained(self).toOpaque()
 
         guard let tap = CGEvent.tapCreate(
@@ -54,25 +105,36 @@ final class KeyboardLockManager: ObservableObject {
                     return Unmanaged.passRetained(event)
                 }
 
-                // Emergency unlock: Cmd+Opt+Ctrl+U
+                guard let userInfo else { return nil }
+                let manager = Unmanaged<KeyboardLockManager>.fromOpaque(userInfo).takeUnretainedValue()
+
+                // Emergency unlock: Cmd+Opt+Ctrl+U (works in both locked and piano mode)
                 let flags = event.flags
-                let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+                let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
                 let isEmergencyCombo =
                     flags.contains(.maskCommand) &&
                     flags.contains(.maskAlternate) &&
                     flags.contains(.maskControl) &&
                     keyCode == 32 // 'U' key
                 if isEmergencyCombo && type == .keyDown {
-                    if let userInfo = userInfo {
-                        let manager = Unmanaged<KeyboardLockManager>.fromOpaque(userInfo).takeUnretainedValue()
-                        DispatchQueue.main.async {
-                            manager.unlock()
-                        }
+                    DispatchQueue.main.async {
+                        manager.stopAll()
                     }
                     return Unmanaged.passRetained(event)
                 }
 
-                // Block the event
+                // Piano mode: route keys to piano
+                if manager.mode == .piano {
+                    if type == .keyDown {
+                        manager.pianoViewModel?.noteOn(keyCode: keyCode)
+                    } else if type == .keyUp {
+                        manager.pianoViewModel?.noteOff(keyCode: keyCode)
+                    }
+                    // Block the event from reaching other apps
+                    return nil
+                }
+
+                // Locked mode: block everything
                 return nil
             },
             userInfo: selfPtr
@@ -85,11 +147,10 @@ final class KeyboardLockManager: ObservableObject {
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
 
-        isLocked = true
         startHealthCheck()
     }
 
-    func unlock() {
+    private func tearDownEventTap() {
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
             if let source = runLoopSource {
@@ -101,8 +162,6 @@ final class KeyboardLockManager: ObservableObject {
         runLoopSource = nil
         healthCheckTimer?.invalidate()
         healthCheckTimer = nil
-
-        isLocked = false
     }
 
     // MARK: - Health Check
